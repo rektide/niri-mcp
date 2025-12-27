@@ -4,7 +4,9 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build:ts": "tsdown niri-mcp.ts",
+		"check:ts": "tsgo"
 	},
 	"repository": {
 		"type": "git",
@@ -25,6 +27,12 @@
 		"@modelcontextprotocol/sdk": "^1.25.1",
 		"gunshi": "^0.27.5",
 		"hono": "^4.11.3",
-		"tinyexec": "^1.0.2"
+		"tinyexec": "^1.0.2",
+		"zod": "^4.2.1"
+	},
+	"devDependencies": {
+		"@types/node": "^25.0.3",
+		"@typescript/native-preview": "7.0.0-dev.20251226.1",
+		"tsdown": "^0.18.3"
 	}
 }

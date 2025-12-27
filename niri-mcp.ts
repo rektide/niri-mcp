@@ -3,6 +3,7 @@ import { StreamableHTTPTransport } from "@hono/mcp";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { realpath } from "node:fs/promises";
+import * as tool from "./tool/index.ts";
 
 const app = new Hono();
 const mcpServer = new McpServer({
@@ -12,6 +13,17 @@ const mcpServer = new McpServer({
 
 const transport = new StreamableHTTPTransport();
 
+for (const { name, description, inputSchema, handler } of tool.tools) {
+	mcpServer.registerTool(
+		name,
+		{
+			description,
+			inputSchema,
+		},
+		handler,
+	);
+}
+
 app.all("/mcp", async (c) => {
 	if (!mcpServer.isConnected()) {
 		await mcpServer.connect(transport);
@@ -20,17 +32,24 @@ app.all("/mcp", async (c) => {
 	return transport.handleRequest(c);
 });
 
-realpath(process.argv[1]).then((mainPath) => {
-	if (import.meta.url.startsWith(`file://${mainPath}`)) {
-		const port = 3000;
+realpath(process.argv[1])
+	.then((mainPath) => {
+		if (import.meta.url.startsWith(`file://${mainPath}`)) {
+			const port = 3000;
 
-		serve({
-			fetch: app.fetch,
-			port,
-		}, (info) => {
-			console.log(`MCP server running at http://localhost:${info.port}/mcp`);
-		});
-	}
-}).catch(() => {});
+			serve(
+				{
+					fetch: app.fetch,
+					port,
+				},
+				(info) => {
+					console.log(
+						`MCP server running at http://localhost:${info.port}/mcp`,
+					);
+				},
+			);
+		}
+	})
+	.catch(() => { });
 
 export default app;
