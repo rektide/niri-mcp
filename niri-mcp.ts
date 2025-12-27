@@ -3,7 +3,8 @@ import { StreamableHTTPTransport } from "@hono/mcp";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { realpath } from "node:fs/promises";
-import * as tool from "./tool/index.ts";
+import { tools } from "./tool/index.ts";
+import type { ToolDefinition } from "./types.d.ts";
 
 const app = new Hono();
 const mcpServer = new McpServer({
@@ -13,15 +14,19 @@ const mcpServer = new McpServer({
 
 const transport = new StreamableHTTPTransport();
 
-for (const { name, description, inputSchema, handler } of tool.tools) {
+function registerToolDefinition(definition: ToolDefinition) {
 	mcpServer.registerTool(
-		name,
+		definition.name,
 		{
-			description,
-			inputSchema,
+			description: definition.description,
+			inputSchema: definition.inputSchema,
 		},
-		handler,
+		definition.handler,
 	);
+}
+
+for (const toolDefinition of tools) {
+	registerToolDefinition(toolDefinition);
 }
 
 app.all("/mcp", async (c) => {

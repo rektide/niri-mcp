@@ -10,7 +10,7 @@ import { z } from "zod";
 async function handler$3() {
 	const { stdout } = await x("niri", [
 		"msg",
-		"-j",
+		"--json",
 		"outputs"
 	]);
 	const result = JSON.parse(stdout);
@@ -31,7 +31,7 @@ const tool$3 = {
 async function handler$2() {
 	const { stdout } = await x("niri", [
 		"msg",
-		"-j",
+		"--json",
 		"workspaces"
 	]);
 	const result = JSON.parse(stdout);
@@ -52,7 +52,7 @@ const tool$2 = {
 async function handler$1() {
 	const { stdout } = await x("niri", [
 		"msg",
-		"-j",
+		"--json",
 		"windows"
 	]);
 	const result = JSON.parse(stdout);
@@ -73,7 +73,7 @@ const tool$1 = {
 async function handler() {
 	const { stdout } = await x("niri", [
 		"msg",
-		"-j",
+		"--json",
 		"layers"
 	]);
 	const result = JSON.parse(stdout);
@@ -110,10 +110,13 @@ const mcpServer = new McpServer({
 	version: "1.0.0"
 });
 const transport = new StreamableHTTPTransport();
-for (const { name, description, inputSchema, handler: handler$4 } of tools) mcpServer.registerTool(name, {
-	description,
-	inputSchema
-}, handler$4);
+function registerToolDefinition(definition) {
+	mcpServer.registerTool(definition.name, {
+		description: definition.description,
+		inputSchema: definition.inputSchema
+	}, definition.handler);
+}
+for (const toolDefinition of tools) registerToolDefinition(toolDefinition);
 app.all("/mcp", async (c) => {
 	if (!mcpServer.isConnected()) await mcpServer.connect(transport);
 	return transport.handleRequest(c);

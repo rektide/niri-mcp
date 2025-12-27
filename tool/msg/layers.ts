@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { ToolDefinition } from "../../types.d.ts";
 
 async function handler() {
-	const { stdout } = await x("niri", ["msg", "-j", "layers"]);
+	const { stdout } = await x("niri", ["msg", "--json", "layers"]);
 	const result = JSON.parse(stdout);
 	return {
 		content: [
