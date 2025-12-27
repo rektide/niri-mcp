@@ -1,0 +1,30 @@
+{
+	"name": "niri-mcp",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rektide/niri-mcp.git"
+	},
+	"keywords": [],
+	"author": "rektide de la faye",
+	"license": "MIT",
+	"type": "module",
+	"bugs": {
+		"url": "https://github.com/rektide/niri-mcp/issues"
+	},
+	"homepage": "https://github.com/rektide/niri-mcp#readme",
+	"module": "niri-mcp.js",
+	"dependencies": {
+		"@hono/mcp": "^0.2.3",
+		"@hono/node-server": "^1.19.7",
+		"@modelcontextprotocol/sdk": "^1.25.1",
+		"gunshi": "^0.27.5",
+		"hono": "^4.11.3",
+		"tinyexec": "^1.0.2"
+	}
+}
