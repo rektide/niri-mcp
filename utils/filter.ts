@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 
 export interface FilterOptions {
 	include?: string[];

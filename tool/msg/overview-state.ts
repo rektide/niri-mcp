@@ -1,11 +1,11 @@
 import { x } from "tinyexec";
 import { z } from "zod";
 import type { ToolDefinition } from "../../types.d.ts";
-import type { Window } from "./types.js";
+import type { OverviewState } from "./types.js";
 
 async function handler() {
-	const { stdout } = await x("niri", ["msg", "--json", "windows"]);
-	const result = JSON.parse(stdout) as Window[];
+	const { stdout } = await x("niri", ["msg", "--json", "overview-state"]);
+	const result = JSON.parse(stdout) as OverviewState;
 	return {
 		content: [
 			{
@@ -17,8 +17,8 @@ async function handler() {
 }
 
 export const tool: ToolDefinition = {
-	name: "niri_windows",
-	description: "List open windows in Niri window manager",
+	name: "niri_overview_state",
+	description: "Get the overview state in Niri window manager",
 	inputSchema: z.object({}),
 	handler,
 };

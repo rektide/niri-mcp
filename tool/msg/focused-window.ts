@@ -4,8 +4,8 @@ import type { ToolDefinition } from "../../types.d.ts";
 import type { Window } from "./types.js";
 
 async function handler() {
-	const { stdout } = await x("niri", ["msg", "--json", "windows"]);
-	const result = JSON.parse(stdout) as Window[];
+	const { stdout } = await x("niri", ["msg", "--json", "focused-window"]);
+	const result = JSON.parse(stdout) as Window;
 	return {
 		content: [
 			{
@@ -17,8 +17,8 @@ async function handler() {
 }
 
 export const tool: ToolDefinition = {
-	name: "niri_windows",
-	description: "List open windows in Niri window manager",
+	name: "niri_focused_window",
+	description: "Get the currently focused window in Niri window manager",
 	inputSchema: z.object({}),
 	handler,
 };

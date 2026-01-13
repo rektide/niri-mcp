@@ -1,10 +1,11 @@
 import { x } from "tinyexec";
 import { z } from "zod";
 import type { ToolDefinition } from "../../types.d.ts";
+import type { Output } from "./types.js";
 
 async function handler() {
 	const { stdout } = await x("niri", ["msg", "--json", "outputs"]);
-	const result = JSON.parse(stdout);
+	const result = JSON.parse(stdout) as Record<string, Output>;
 	return {
 		content: [
 			{

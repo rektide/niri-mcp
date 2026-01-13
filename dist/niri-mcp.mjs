@@ -7,7 +7,7 @@ import { x } from "tinyexec";
 import { z } from "zod";
 
 //#region tool/msg/outputs.ts
-async function handler$3() {
+async function handler$7() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -19,16 +19,16 @@ async function handler$3() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$3 = {
+const tool$7 = {
 	name: "niri_outputs",
 	description: "List connected outputs (monitors) in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$3
+	handler: handler$7
 };
 
 //#endregion
 //#region tool/msg/workspaces.ts
-async function handler$2() {
+async function handler$6() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -40,16 +40,16 @@ async function handler$2() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$2 = {
+const tool$6 = {
 	name: "niri_workspaces",
 	description: "List workspaces in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$2
+	handler: handler$6
 };
 
 //#endregion
 //#region tool/msg/windows.ts
-async function handler$1() {
+async function handler$5() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -61,16 +61,16 @@ async function handler$1() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$1 = {
+const tool$5 = {
 	name: "niri_windows",
 	description: "List open windows in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$1
+	handler: handler$5
 };
 
 //#endregion
 //#region tool/msg/layers.ts
-async function handler() {
+async function handler$4() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -82,16 +82,181 @@ async function handler() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool = {
+const tool$4 = {
 	name: "niri_layers",
 	description: "List layer-shell surfaces (like panels, menus) in Niri window manager",
+	inputSchema: z.object({}),
+	handler: handler$4
+};
+
+//#endregion
+//#region tool/msg/keyboard-layouts.ts
+async function handler$3() {
+	const { stdout } = await x("niri", [
+		"msg",
+		"--json",
+		"keyboard-layouts"
+	]);
+	const result = JSON.parse(stdout);
+	return { content: [{
+		type: "text",
+		text: JSON.stringify(result, null, 2)
+	}] };
+}
+const tool$3 = {
+	name: "niri_keyboard_layouts",
+	description: "List keyboard layouts in Niri window manager",
+	inputSchema: z.object({}),
+	handler: handler$3
+};
+
+//#endregion
+//#region tool/msg/focused-output.ts
+async function handler$2() {
+	const { stdout } = await x("niri", [
+		"msg",
+		"--json",
+		"focused-output"
+	]);
+	const result = JSON.parse(stdout);
+	return { content: [{
+		type: "text",
+		text: JSON.stringify(result, null, 2)
+	}] };
+}
+const tool$2 = {
+	name: "niri_focused_output",
+	description: "Get the currently focused output (monitor) in Niri window manager",
+	inputSchema: z.object({}),
+	handler: handler$2
+};
+
+//#endregion
+//#region tool/msg/focused-window.ts
+async function handler$1() {
+	const { stdout } = await x("niri", [
+		"msg",
+		"--json",
+		"focused-window"
+	]);
+	const result = JSON.parse(stdout);
+	return { content: [{
+		type: "text",
+		text: JSON.stringify(result, null, 2)
+	}] };
+}
+const tool$1 = {
+	name: "niri_focused_window",
+	description: "Get the currently focused window in Niri window manager",
+	inputSchema: z.object({}),
+	handler: handler$1
+};
+
+//#endregion
+//#region tool/msg/overview-state.ts
+async function handler() {
+	const { stdout } = await x("niri", [
+		"msg",
+		"--json",
+		"overview-state"
+	]);
+	const result = JSON.parse(stdout);
+	return { content: [{
+		type: "text",
+		text: JSON.stringify(result, null, 2)
+	}] };
+}
+const tool = {
+	name: "niri_overview_state",
+	description: "Get the overview state in Niri window manager",
 	inputSchema: z.object({}),
 	handler
 };
 
 //#endregion
+//#region tool/msg/types.ts
+const OutputModeSchema = z.object({
+	width: z.number(),
+	height: z.number(),
+	refresh_rate: z.number(),
+	is_preferred: z.boolean()
+});
+const OutputLogicalSchema = z.object({
+	x: z.number(),
+	y: z.number(),
+	width: z.number(),
+	height: z.number(),
+	scale: z.number(),
+	transform: z.enum([
+		"Normal",
+		"90",
+		"180",
+		"270",
+		"Flipped",
+		"Flipped-90",
+		"Flipped-180",
+		"Flipped-270"
+	])
+});
+const OutputSchema = z.object({
+	name: z.string(),
+	make: z.string().nullable(),
+	model: z.string(),
+	serial: z.string().nullable(),
+	physical_size: z.tuple([z.number(), z.number()]),
+	modes: z.array(OutputModeSchema),
+	current_mode: z.number(),
+	is_custom_mode: z.boolean(),
+	vrr_supported: z.boolean(),
+	vrr_enabled: z.boolean(),
+	logical: OutputLogicalSchema
+});
+const WorkspaceSchema = z.object({
+	id: z.number(),
+	idx: z.number(),
+	name: z.string().nullable(),
+	output: z.string(),
+	is_urgent: z.boolean(),
+	is_active: z.boolean(),
+	is_focused: z.boolean(),
+	active_window_id: z.number().nullable()
+});
+const WindowLayoutSchema = z.object({
+	pos_in_scrolling_layout: z.tuple([z.number(), z.number()]),
+	tile_size: z.tuple([z.number(), z.number()]),
+	window_size: z.tuple([z.number(), z.number()]),
+	tile_pos_in_workspace_view: z.nullable(z.tuple([z.number(), z.number()])),
+	window_offset_in_tile: z.tuple([z.number(), z.number()])
+});
+const FocusTimestampSchema = z.object({
+	secs: z.number(),
+	nanos: z.number()
+});
+const WindowSchema = z.object({
+	id: z.number(),
+	title: z.string(),
+	app_id: z.string(),
+	pid: z.number(),
+	workspace_id: z.number(),
+	is_focused: z.boolean(),
+	is_floating: z.boolean(),
+	is_urgent: z.boolean(),
+	layout: WindowLayoutSchema,
+	focus_timestamp: FocusTimestampSchema
+});
+const KeyboardLayoutsSchema = z.object({
+	names: z.array(z.string()),
+	current_idx: z.number()
+});
+const OverviewStateSchema = z.object({ is_open: z.boolean() });
+
+//#endregion
 //#region tool/msg/index.ts
 const tools$1 = [
+	tool$7,
+	tool$6,
+	tool$5,
+	tool$4,
 	tool$3,
 	tool$2,
 	tool$1,
