@@ -38,10 +38,10 @@ We will implement proper MCP resources with:
 
 ### URI Hierarchy
 
-Resources will follow a hierarchical structure reflecting niri's domain model:
+Resources will follow a hierarchical structure reflecting niri's domain model, with a niri-name component at the root to support multiple niri instances:
 
 ```
-niri://
+niri://{niri-name}/
 ├── outputs/                          # All outputs
 │   ├── {name}/                       # Specific output
 │   │   └── workspaces/              # Workspaces on this output
@@ -59,6 +59,18 @@ niri://
 │   └── current/                     # Current layout
 └── overview-state/                  # Overview toggle state
 ```
+
+**Examples:**
+- `niri://main/outputs/DP-1` - Output "DP-1" from niri instance "main"
+- `niri://main/outputs/DP-1/workspaces/1` - Workspace 1 on output DP-1 (main instance)
+- `niri://work/outputs/DP-1/workspaces/1` - Workspace 1 on output DP-1 (work instance)
+- `niri://default/windows` - All windows from default niri instance
+- `niri:///outputs/DP-1` - Default instance (implicit empty name, triple slash)
+
+**Niri Instance Discovery:**
+- Root resource `niri://` lists available niri instances: `["main", "work", "default"]`
+- Configurable default instance name (e.g., "default" or empty string)
+- Instance names must be valid URI path components (no special characters)
 
 ### Embedded Resource Structure
 
@@ -87,17 +99,19 @@ Resources will return embedded resources for structured data:
 
 | Niri Entity | Resource URI Pattern | MIME Type | Content Type |
 |-------------|-------------------|------------|--------------|
-| Output | `niri://outputs/{name}` | `application/json+schema` | Embedded resource |
-| Output modes | `niri://outputs/{name}/modes` | `application/json+schema` | Embedded resource |
-| Workspaces (output-scoped) | `niri://outputs/{name}/workspaces` | `application/json+schema` | Embedded resource |
-| Workspace | `niri://outputs/{name}/workspaces/{id}` | `application/json+schema` | Embedded resource |
-| Windows (workspace-scoped) | `niri://outputs/{name}/workspaces/{id}/windows` | `application/json+schema` | Embedded resource |
-| Window | `niri://outputs/{name}/workspaces/{id}/windows/{id}` | `application/json+schema` | Embedded resource |
-| Windows (global) | `niri://windows` | `application/json+schema` | Embedded resource |
-| Window (global) | `niri://windows/{id}` | `application/json+schema` | Embedded resource |
-| Layers | `niri://layers` | `application/json+schema` | Embedded resource |
-| Keyboard layouts | `niri://keyboard-layouts` | `application/json+schema` | Embedded resource |
-| Overview state | `niri://overview-state` | `application/json+schema` | Embedded resource |
+| Niri instances | `niri://` | `application/json+schema` | Embedded resource |
+| Output | `niri://{niri-name}/outputs/{name}` | `application/json+schema` | Embedded resource |
+| Output modes | `niri://{niri-name}/outputs/{name}/modes` | `application/json+schema` | Embedded resource |
+| Outputs (list) | `niri://{niri-name}/outputs` | `application/json+schema` | Embedded resource |
+| Workspaces (output-scoped) | `niri://{niri-name}/outputs/{name}/workspaces` | `application/json+schema` | Embedded resource |
+| Workspace | `niri://{niri-name}/outputs/{name}/workspaces/{id}` | `application/json+schema` | Embedded resource |
+| Windows (workspace-scoped) | `niri://{niri-name}/outputs/{name}/workspaces/{id}/windows` | `application/json+schema` | Embedded resource |
+| Window | `niri://{niri-name}/outputs/{name}/workspaces/{id}/windows/{id}` | `application/json+schema` | Embedded resource |
+| Windows (global) | `niri://{niri-name}/windows` | `application/json+schema` | Embedded resource |
+| Window (global) | `niri://{niri-name}/windows/{id}` | `application/json+schema` | Embedded resource |
+| Layers | `niri://{niri-name}/layers` | `application/json+schema` | Embedded resource |
+| Keyboard layouts | `niri://{niri-name}/keyboard-layouts` | `application/json+schema` | Embedded resource |
+| Overview state | `niri://{niri-name}/overview-state` | `application/json+schema` | Embedded resource |
 
 ### Collection Resources
 
@@ -105,10 +119,10 @@ Collection resources (ending without an identifier) will return arrays:
 
 ```json
 {
-  "uri": "niri://outputs/DP-1/workspaces",
+  "uri": "niri://main/outputs/DP-1/workspaces",
   "items": [
-    "niri://outputs/DP-1/workspaces/1",
-    "niri://outputs/DP-1/workspaces/2"
+    "niri://main/outputs/DP-1/workspaces/1",
+    "niri://main/outputs/DP-1/workspaces/2"
   ]
 }
 ```
@@ -117,15 +131,35 @@ Or expanded view (via query parameter `?expand=true`):
 
 ```json
 {
-  "uri": "niri://outputs/DP-1/workspaces",
+  "uri": "niri://main/outputs/DP-1/workspaces",
   "items": [
     {
-      "uri": "niri://outputs/DP-1/workspaces/1",
+      "uri": "niri://main/outputs/DP-1/workspaces/1",
       "data": { ...workspace data... }
     },
     {
-      "uri": "niri://outputs/DP-1/workspaces/2",
+      "uri": "niri://main/outputs/DP-1/workspaces/2",
       "data": { ...workspace data... }
+    }
+  ]
+}
+```
+
+**Instance list response:**
+
+```json
+{
+  "uri": "niri://",
+  "items": [
+    {
+      "name": "main",
+      "uri": "niri://main",
+      "is_default": true
+    },
+    {
+      "name": "work",
+      "uri": "niri://work",
+      "is_default": false
     }
   ]
 }
@@ -162,11 +196,12 @@ Resources will support standard query parameters:
 
 ### Why Hierarchical URIs?
 
-1. **Reflects domain model** - Output → Workspace → Window relationships are explicit
-2. **Context-aware queries** - "All workspaces on DP-1" becomes `niri://outputs/DP-1/workspaces`
-3. **Natural navigation** - Clients can navigate relationships by extending paths
-4. **RESTful patterns** - Familiar to developers working with HTTP APIs
-5. **Explicit scope** - Makes it clear which output/workspace a window belongs to
+1. **Reflects domain model** - Niri instance → Output → Workspace → Window relationships are explicit
+2. **Context-aware queries** - "All workspaces on DP-1" becomes `niri://main/outputs/DP-1/workspaces`
+3. **Multi-instance support** - Root component enables managing multiple niri instances
+4. **Natural navigation** - Clients can navigate relationships by extending paths
+5. **RESTful patterns** - Familiar to developers working with HTTP APIs
+6. **Explicit scope** - Makes it clear which instance/output/workspace a window belongs to
 
 ### Why `niri://` Scheme?
 
@@ -272,10 +307,12 @@ tool/msg/                     # Keep existing tools
 
 ```typescript
 interface ResourceHandler {
-  uri: string;
+  uriPattern: string;
   mimeType: string;
   annotations?: ResourceAnnotations;
   handle(params: {
+    niriName: string;
+    pathComponents: string[];
     expand?: boolean;
     fields?: string[];
     filter?: Record<string, unknown>;
@@ -287,33 +324,33 @@ interface ResourceHandler {
 
 ```typescript
 export const outputWorkspacesResource: ResourceHandler = {
-  uri: "niri://outputs/{name}/workspaces",
+  uriPattern: "niri://{niri-name}/outputs/{name}/workspaces",
   mimeType: "application/json+schema",
   annotations: {
     audience: ["assistant"],
     priority: 0.9,
   },
-  async handle({ expand, fields, filter }) {
-    const outputName = this.uri.split('/')[2];
-    const stdout = await x("niri", ["msg", "--json", "workspaces"]);
+  async handle({ niriName, pathComponents, expand, fields, filter }) {
+    const outputName = pathComponents[2];
+    const stdout = await x("niri", ["--socket", `niri-${niriName}.sock`, "msg", "--json", "workspaces"]);
     const allWorkspaces = JSON.parse(stdout) as Workspace[];
     const outputWorkspaces = allWorkspaces.filter(ws => ws.output === outputName);
-    
+
     if (expand) {
       return {
-        uri: `niri://outputs/${outputName}/workspaces`,
+        uri: `niri://${niriName}/outputs/${outputName}/workspaces`,
         mimeType: this.mimeType,
         items: outputWorkspaces.map(ws => ({
-          uri: `niri://outputs/${outputName}/workspaces/${ws.id}`,
+          uri: `niri://${niriName}/outputs/${outputName}/workspaces/${ws.id}`,
           data: query([ws], { fields, filter }),
         })),
       };
     }
-    
+
     return {
-      uri: `niri://outputs/${outputName}/workspaces`,
+      uri: `niri://${niriName}/outputs/${outputName}/workspaces`,
       mimeType: this.mimeType,
-      items: outputWorkspaces.map(ws => `niri://outputs/${outputName}/workspaces/${ws.id}`),
+      items: outputWorkspaces.map(ws => `niri://${niriName}/outputs/${outputName}/workspaces/${ws.id}`),
     };
   },
 };
@@ -327,7 +364,7 @@ export const outputWorkspacesResource: ResourceHandler = {
 - `niri://workspaces?output=DP-1`
 - `niri://windows?workspace_id=1`
 
-**Rejected:** Doesn't reflect domain relationships; URI parsing more complex; less navigable
+**Rejected:** Doesn't reflect domain relationships; URI parsing more complex; less navigable; no multi-instance support
 
 ### Alternative 2: File URIs
 
@@ -342,6 +379,13 @@ export const outputWorkspacesResource: ResourceHandler = {
 - `outputs/DP-1/workspaces/1`
 
 **Rejected:** Ambiguous origin; requires base URI; can't differentiate niri-mcp from other MCP servers
+
+### Alternative 4: Single Niri Instance
+
+**Proposal:** No niri-name component, assume single instance
+- `niri://outputs/DP-1/workspaces/1`
+
+**Rejected:** Limits use cases; some users run multiple niri instances (e.g., separate work/play environments); harder to extend later
 
 ## References
 
