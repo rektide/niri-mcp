@@ -2,13 +2,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
-import { readdir, realpath, stat } from "node:fs/promises";
+import { readdir, realpath, rename, stat } from "node:fs/promises";
 import { x } from "tinyexec";
 import { z } from "zod";
 import { join } from "node:path";
 
 //#region tool/msg/outputs.ts
-async function handler$8() {
+async function handler$9() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -20,16 +20,16 @@ async function handler$8() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$8 = {
+const tool$9 = {
 	name: "niri_outputs",
 	description: "List connected outputs (monitors) in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$8
+	handler: handler$9
 };
 
 //#endregion
 //#region tool/msg/workspaces.ts
-async function handler$7() {
+async function handler$8() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -41,16 +41,16 @@ async function handler$7() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$7 = {
+const tool$8 = {
 	name: "niri_workspaces",
 	description: "List workspaces in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$7
+	handler: handler$8
 };
 
 //#endregion
 //#region tool/msg/windows.ts
-async function handler$6() {
+async function handler$7() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -62,16 +62,16 @@ async function handler$6() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$6 = {
+const tool$7 = {
 	name: "niri_windows",
 	description: "List open windows in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$6
+	handler: handler$7
 };
 
 //#endregion
 //#region tool/msg/layers.ts
-async function handler$5() {
+async function handler$6() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -83,16 +83,16 @@ async function handler$5() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$5 = {
+const tool$6 = {
 	name: "niri_layers",
 	description: "List layer-shell surfaces (like panels, menus) in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$5
+	handler: handler$6
 };
 
 //#endregion
 //#region tool/msg/keyboard-layouts.ts
-async function handler$4() {
+async function handler$5() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -104,16 +104,16 @@ async function handler$4() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$4 = {
+const tool$5 = {
 	name: "niri_keyboard_layouts",
 	description: "List keyboard layouts in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$4
+	handler: handler$5
 };
 
 //#endregion
 //#region tool/msg/focused-output.ts
-async function handler$3() {
+async function handler$4() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -125,16 +125,16 @@ async function handler$3() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$3 = {
+const tool$4 = {
 	name: "niri_focused_output",
 	description: "Get the currently focused output (monitor) in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$3
+	handler: handler$4
 };
 
 //#endregion
 //#region tool/msg/focused-window.ts
-async function handler$2() {
+async function handler$3() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -146,16 +146,16 @@ async function handler$2() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$2 = {
+const tool$3 = {
 	name: "niri_focused_window",
 	description: "Get the currently focused window in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$2
+	handler: handler$3
 };
 
 //#endregion
 //#region tool/msg/overview-state.ts
-async function handler$1() {
+async function handler$2() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -167,11 +167,11 @@ async function handler$1() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$1 = {
+const tool$2 = {
 	name: "niri_overview_state",
 	description: "Get the overview state in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$1
+	handler: handler$2
 };
 
 //#endregion
@@ -254,14 +254,14 @@ const OverviewStateSchema = z.object({ is_open: z.boolean() });
 //#endregion
 //#region tool/msg/index.ts
 const tools$1 = [
+	tool$9,
 	tool$8,
 	tool$7,
 	tool$6,
 	tool$5,
 	tool$4,
 	tool$3,
-	tool$2,
-	tool$1
+	tool$2
 ];
 
 //#endregion
@@ -310,24 +310,127 @@ function applyConfigFilter(filename, pattern) {
 
 //#endregion
 //#region tool/config/list.ts
-const inputSchema = z.object({ filter: z.string().optional() });
-async function handler() {
+const inputSchema$1 = z.object({ filter: z.string().optional() });
+async function handler$1() {
 	const configs = await scanConfigDir(`${process.env.HOME}/.config/niri/config.d`);
 	return { content: [{
 		type: "text",
 		text: JSON.stringify(configs, null, 2)
 	}] };
 }
-const tool = {
+const tool$1 = {
 	name: "list_niri_configs",
 	description: "List niri config.d files with their state (included/excluded)",
+	inputSchema: inputSchema$1,
+	handler: handler$1
+};
+
+//#endregion
+//#region tool/config/toggle.ts
+const inputSchema = z.object({
+	idRegex: z.string().optional(),
+	action: z.enum([
+		"on",
+		"off",
+		"toggle"
+	]).default("toggle")
+});
+async function handler() {
+	const dirPath = `${process.env.HOME}/.config/niri/config.d`;
+	const action = "toggle";
+	const configs = await scanConfigDir(dirPath);
+	const affected = [];
+	const skipped = [];
+	for (const config of configs) {
+		const previousState = config.state;
+		let newState;
+		const isExcluded = config.state === "excluded";
+		const isIncluded = config.state === "included";
+		switch (action) {
+			case "on":
+				if (isExcluded) {
+					const newPath = config.path.replace(/\.disabled$/, "");
+					try {
+						await rename(config.path, newPath);
+						newState = "included";
+					} catch (error) {
+						skipped.push({
+							name: config.name,
+							reason: error.message
+						});
+					}
+				}
+				break;
+			case "off":
+				if (isIncluded) {
+					const newPath = `${config.path}.disabled`;
+					try {
+						await rename(config.path, newPath);
+						newState = "excluded";
+					} catch (error) {
+						skipped.push({
+							name: config.name,
+							reason: error.message
+						});
+					}
+				}
+				break;
+			case "toggle":
+				if (isIncluded) {
+					const newPath = `${config.path}.disabled`;
+					try {
+						await rename(config.path, newPath);
+						newState = "excluded";
+					} catch (error) {
+						skipped.push({
+							name: config.name,
+							reason: error.message
+						});
+					}
+				} else {
+					const newPath = config.path.replace(/\.disabled$/, "");
+					try {
+						await rename(config.path, newPath);
+						newState = "included";
+					} catch (error) {
+						skipped.push({
+							name: config.name,
+							reason: error.message
+						});
+					}
+				}
+				break;
+		}
+		if (newState) affected.push({
+			name: config.name,
+			previousState,
+			newState,
+			path: config.path
+		});
+	}
+	const result = {
+		affected,
+		skipped
+	};
+	return { content: [{
+		type: "text",
+		text: JSON.stringify(result, null, 2)
+	}] };
+}
+const tool = {
+	name: "toggle_niri_config",
+	description: "Toggle niri config.d files (enable/disable)",
 	inputSchema,
 	handler
 };
 
 //#endregion
 //#region tool/index.ts
-const tools = [...tools$1, tool];
+const tools = [
+	...tools$1,
+	tool$1,
+	tool
+];
 
 //#endregion
 //#region niri-mcp.ts
