@@ -304,10 +304,8 @@ niri://{niri-name}/
 
 Based on ADR-001, next work would be:
 
-1. **Create resource infrastructure:**
-   - `tool/resource/` directory
-   - URI parser for `niri://{niri-name}/` patterns
-   - Resource registry mapping URIs to handlers
+1. **Implement resource infrastructure (see ADR-001)**
+2. **Implement event streaming via Streamable HTTP (see ADR-003)**
 
 2. **Implement `resources/list` and `resources/read`** MCP methods
 
