@@ -160,27 +160,102 @@ Tool for toggling KDL include directives:
   - `toggle`: Flip `// disabled` comment presence
 - Track affected and skipped includes
 
+**Behavior:**
+- Parse `~/.config/niri/config.kdl` file
+- Find all `include` directives
+- Determine state based on presence of `// disabled` comment
+- Returns array with include path and state
+
 **Implementation Notes:**
 - Uses raw string manipulation to add/remove `// disabled` comments
-- Preserves all other formatting and comments
+- Preserves all existing formatting and comments
 - Library: `@bgotink/kdl` (comment-preserving, format-preserving)
 - Build passes but type check fails due to library API complexity (documented in ticket notes)
 
-### Config State Determination
-
-**CONFIG-STATE for config.d files is determined by `.disabled` suffix:**
-- `~/.config/niri/config.d/work-keybinds.kdl` → **included**
-- `~/.config/niri/config.d/experimental.kdl.disabled` → **excluded**
-
-**CONFIG-STATE for KDL includes is determined by `// disabled` comment:**
-- `include "work/*.kdl"` → **included**
-- `include "play-profile.kdl" // disabled` → **excluded**
-
-## Decision
-
-Implement config.d management tools for niri-mcp to enable listing and toggling config files via MCP.
-
 ### Tools
+
+#### LIST-NIRI-KDL-INCLUDES
+Tool for listing KDL include directives with their state:
+
+```typescript
+{
+  name: "list_niri_kdl_includes",
+  description: "List KDL include directives from niri config.kdl with state",
+  inputSchema: z.object({
+    path: z.string().optional(),
+  }),
+  handler: async (params) => Promise<CallToolResult>
+}
+```
+
+**Parameters:**
+- `path` (optional): Path to config.kdl file (defaults to `~/.config/niri/config.kdl`)
+
+**Returns:**
+```typescript
+{
+  path: string,
+  includes: Array<{
+    path: string
+    state: "included" | "excluded"
+  }>
+}
+```
+
+**Behavior:**
+- Parse `~/.config/niri/config.kdl` file
+- Find all `include` directives
+- Determine state based on presence of `// disabled` comment
+- Returns array with include path and state
+
+#### TOGGLE-NIRI-KDL-INCLUDE
+Tool for toggling KDL include directives:
+
+```typescript
+{
+  name: "toggle_niri_kdl_include",
+  description: "Toggle KDL include directives in niri config.kdl by adding/removing '// disabled' comment",
+  inputSchema: z.object({
+    path: z.string().optional(),
+    pattern: z.string().optional(),
+    action: z.enum(["on", "off", "toggle"]).default("toggle"),
+  }),
+  handler: async (params) => Promise<CallToolResult>
+}
+```
+
+**Parameters:**
+- `path` (optional): Path to config.kdl file (defaults to `~/.config/niri/config.kdl`)
+- `pattern` (optional): Regex pattern to match include values (e.g., `work-.*`, `experimental-.*`)
+- `action` (default: "toggle"): Operation to perform:
+  - `on`: Enable include (remove `// disabled` comment)
+  - `off`: Disable include (add `// disabled` comment)
+  - `toggle`: Flip state (add/remove `.disabled` suffix)
+
+**Returns:**
+```typescript
+{
+  affected: Array<{
+    include: string
+    previousState: "included" | "excluded"
+    newState: "included" | "excluded"
+  }>
+  skipped: Array<{
+    include: string
+    reason: string
+  }>
+}
+```
+
+**Behavior:**
+- Parse `~/.config/niri/config.kdl` file
+- Find all `include` directives (matching optional pattern)
+- Apply action to each include:
+  - `on`: Remove `// disabled` comment if present
+  - `off`: Add `// disabled` comment if not present
+  - `toggle`: Flip `// disabled` comment presence
+- Track affected and skipped includes
+- Return skipped files in result so user knows what happened
 
 #### LIST-CONFIGS
 
