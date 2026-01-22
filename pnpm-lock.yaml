@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@bgotink/kdl':
+        specifier: ^0.4.0
+        version: 0.4.0
       '@hono/mcp':
         specifier: ^0.2.3
         version: 0.2.3(@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@4.2.1))(hono-rate-limiter@0.4.2(hono@4.11.3))(hono@4.11.3)(zod@4.2.1)
@@ -62,6 +65,9 @@ packages:
   '@babel/types@7.28.5':
     resolution: {integrity: sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==}
     engines: {node: '>=6.9.0'}
+
+  '@bgotink/kdl@0.4.0':
+    resolution: {integrity: sha512-F0uJCjo5FQvFdcGF5QbYVNfcGiRWlocuzyIdQxottZF2+gu6L2xjMGEu9PIpse2hifAca/19vIospgaETCKxIg==}
 
   '@emnapi/core@1.7.1':
     resolution: {integrity: sha512-o1uhUASyo921r2XtHYOHy7gdkGLge8ghBEQHMWmyJFoXlpU58kIrhhN3w26lpQb6dspetweapMn2CSNwQ8I4wg==}
@@ -780,6 +786,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
+
+  '@bgotink/kdl@0.4.0': {}
 
   '@emnapi/core@1.7.1':
     dependencies:
