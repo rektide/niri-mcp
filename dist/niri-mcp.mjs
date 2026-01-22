@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
-import { readdir, realpath, rename, stat } from "node:fs/promises";
+import { mkdir, readdir, realpath, rename, stat } from "node:fs/promises";
 import { x } from "tinyexec";
 import { z } from "zod";
 import { join } from "node:path";
@@ -291,7 +291,10 @@ async function scanConfigDir(dirPath, filter) {
 		}
 		return configs.sort((a, b) => a.name.localeCompare(b.name));
 	} catch (error) {
-		if (error.code === "ENOENT") return [];
+		if (error.code === "ENOENT") {
+			await mkdir(dirPath, { recursive: true });
+			return [];
+		}
 		throw error;
 	}
 }

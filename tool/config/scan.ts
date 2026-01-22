@@ -1,4 +1,4 @@
-import { readdir, stat } from "node:fs/promises";
+import { readdir, stat, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { ConfigFile, ConfigState } from "./types.js";
 
@@ -43,6 +43,7 @@ export async function scanConfigDir(
     return configs.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      await mkdir(dirPath, { recursive: true });
       return [];
     }
     throw error;
