@@ -2,12 +2,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
-import { realpath } from "node:fs/promises";
+import { readdir, realpath, stat } from "node:fs/promises";
 import { x } from "tinyexec";
 import { z } from "zod";
+import { join } from "node:path";
 
 //#region tool/msg/outputs.ts
-async function handler$7() {
+async function handler$8() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -19,16 +20,16 @@ async function handler$7() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$7 = {
+const tool$8 = {
 	name: "niri_outputs",
 	description: "List connected outputs (monitors) in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$7
+	handler: handler$8
 };
 
 //#endregion
 //#region tool/msg/workspaces.ts
-async function handler$6() {
+async function handler$7() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -40,16 +41,16 @@ async function handler$6() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$6 = {
+const tool$7 = {
 	name: "niri_workspaces",
 	description: "List workspaces in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$6
+	handler: handler$7
 };
 
 //#endregion
 //#region tool/msg/windows.ts
-async function handler$5() {
+async function handler$6() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -61,16 +62,16 @@ async function handler$5() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$5 = {
+const tool$6 = {
 	name: "niri_windows",
 	description: "List open windows in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$5
+	handler: handler$6
 };
 
 //#endregion
 //#region tool/msg/layers.ts
-async function handler$4() {
+async function handler$5() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -82,16 +83,16 @@ async function handler$4() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$4 = {
+const tool$5 = {
 	name: "niri_layers",
 	description: "List layer-shell surfaces (like panels, menus) in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$4
+	handler: handler$5
 };
 
 //#endregion
 //#region tool/msg/keyboard-layouts.ts
-async function handler$3() {
+async function handler$4() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -103,16 +104,16 @@ async function handler$3() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$3 = {
+const tool$4 = {
 	name: "niri_keyboard_layouts",
 	description: "List keyboard layouts in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$3
+	handler: handler$4
 };
 
 //#endregion
 //#region tool/msg/focused-output.ts
-async function handler$2() {
+async function handler$3() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -124,16 +125,16 @@ async function handler$2() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$2 = {
+const tool$3 = {
 	name: "niri_focused_output",
 	description: "Get the currently focused output (monitor) in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$2
+	handler: handler$3
 };
 
 //#endregion
 //#region tool/msg/focused-window.ts
-async function handler$1() {
+async function handler$2() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -145,16 +146,16 @@ async function handler$1() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool$1 = {
+const tool$2 = {
 	name: "niri_focused_window",
 	description: "Get the currently focused window in Niri window manager",
 	inputSchema: z.object({}),
-	handler: handler$1
+	handler: handler$2
 };
 
 //#endregion
 //#region tool/msg/overview-state.ts
-async function handler() {
+async function handler$1() {
 	const { stdout } = await x("niri", [
 		"msg",
 		"--json",
@@ -166,11 +167,11 @@ async function handler() {
 		text: JSON.stringify(result, null, 2)
 	}] };
 }
-const tool = {
+const tool$1 = {
 	name: "niri_overview_state",
 	description: "Get the overview state in Niri window manager",
 	inputSchema: z.object({}),
-	handler
+	handler: handler$1
 };
 
 //#endregion
@@ -253,19 +254,80 @@ const OverviewStateSchema = z.object({ is_open: z.boolean() });
 //#endregion
 //#region tool/msg/index.ts
 const tools$1 = [
+	tool$8,
 	tool$7,
 	tool$6,
 	tool$5,
 	tool$4,
 	tool$3,
 	tool$2,
-	tool$1,
-	tool
+	tool$1
 ];
 
 //#endregion
+//#region tool/config/scan.ts
+async function scanConfigDir(dirPath, filter) {
+	try {
+		const entries = await readdir(dirPath, { withFileTypes: true });
+		const configs = [];
+		for (const entry of entries) {
+			if (!entry.isFile()) continue;
+			const filename = entry.name;
+			if (!applyConfigFilter(filename, filter)) continue;
+			const filePath = join(dirPath, filename);
+			const state = determineConfigState(filename);
+			let size;
+			try {
+				size = (await stat(filePath)).size;
+			} catch {
+				size = void 0;
+			}
+			configs.push({
+				name: filename,
+				path: filePath,
+				state,
+				size
+			});
+		}
+		return configs.sort((a, b) => a.name.localeCompare(b.name));
+	} catch (error) {
+		if (error.code === "ENOENT") return [];
+		throw error;
+	}
+}
+function determineConfigState(filename) {
+	if (filename.endsWith(".disabled")) return "excluded";
+	return "included";
+}
+function applyConfigFilter(filename, pattern) {
+	if (!pattern) return true;
+	try {
+		return new RegExp(pattern).test(filename);
+	} catch {
+		return false;
+	}
+}
+
+//#endregion
+//#region tool/config/list.ts
+const inputSchema = z.object({ filter: z.string().optional() });
+async function handler() {
+	const configs = await scanConfigDir(`${process.env.HOME}/.config/niri/config.d`);
+	return { content: [{
+		type: "text",
+		text: JSON.stringify(configs, null, 2)
+	}] };
+}
+const tool = {
+	name: "list_niri_configs",
+	description: "List niri config.d files with their state (included/excluded)",
+	inputSchema,
+	handler
+};
+
+//#endregion
 //#region tool/index.ts
-const tools = [...tools$1];
+const tools = [...tools$1, tool];
 
 //#endregion
 //#region niri-mcp.ts
