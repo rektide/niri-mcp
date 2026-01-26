@@ -7,9 +7,18 @@ import * as focusedOutput from "./focused-output.ts";
 import * as focusedWindow from "./focused-window.ts";
 import * as overviewState from "./overview-state.ts";
 import type { ToolDefinition } from "../../types.d.ts";
-export * from "./types.js";
+export * from "./types.ts";
 
-export { outputs, workspaces, windows, layers, keyboardLayouts, focusedOutput, focusedWindow, overviewState };
+export {
+	focusedOutput,
+	focusedWindow,
+	keyboardLayouts,
+	layers,
+	outputs,
+	overviewState,
+	windows,
+	workspaces,
+};
 
 export const tools: ToolDefinition[] = [
 	outputs.tool,

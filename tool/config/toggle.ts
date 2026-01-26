@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { rename } from "node:fs/promises";
-import type { ToolDefinition } from "../../types.d.js";
-import { scanConfigDir, determineConfigState } from "./scan.js";
-import type { ConfigFile, ToggleResult, ConfigFileResult, SkippedFile, ConfigState, ToggleAction } from "./types.js";
+import type { ToolDefinition } from "../../types.d.ts";
+import { scanConfigDir, determineConfigState } from "./scan.ts";
+import type { ConfigFile, ToggleResult, ConfigFileResult, SkippedFile, ConfigState, ToggleAction } from "./types.ts";
 
 const inputSchema = z.object({
   idRegex: z.string().optional(),

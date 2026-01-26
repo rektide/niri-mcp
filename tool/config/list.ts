@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type { ToolDefinition } from "../../types.d.js";
-import { scanConfigDir } from "./scan.js";
-import type { ConfigFile } from "./types.js";
+import type { ToolDefinition } from "../../types.d.ts";
+import { scanConfigDir } from "./scan.ts";
+import type { ConfigFile } from "./types.ts";
 
 const inputSchema = z.object({
   filter: z.string().optional(),

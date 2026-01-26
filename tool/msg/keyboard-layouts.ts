@@ -1,7 +1,7 @@
 import { x } from "tinyexec";
 import { z } from "zod";
 import type { ToolDefinition } from "../../types.d.ts";
-import type { KeyboardLayouts } from "./types.js";
+import type { KeyboardLayouts } from "./types.ts";
 
 async function handler() {
 	const { stdout } = await x("niri", ["msg", "--json", "keyboard-layouts"]);

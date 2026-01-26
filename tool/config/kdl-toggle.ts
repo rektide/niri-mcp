@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { readFile, writeFile } from "node:fs/promises";
 // import { parse, format } from "@bgotink/kdl";
-import type { ToolDefinition } from "../../types.d.js";
+import type { ToolDefinition } from "../../types.d.ts";
 
 const DISABLED_COMMENT = "// disabled";
 

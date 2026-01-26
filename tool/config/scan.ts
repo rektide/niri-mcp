@@ -1,6 +1,6 @@
 import { readdir, stat, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { ConfigFile, ConfigState } from "./types.js";
+import type { ConfigFile, ConfigState } from "./types.ts";
 
 export async function scanConfigDir(
   dirPath: string,
